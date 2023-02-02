@@ -8,7 +8,7 @@
 const WIDTH = 7;
 const HEIGHT = 6;
 
-let currPlayer = 1; // active player: 1 or 2
+let currPlayer = 'player1'; // active player: 1 or 2
 const board = makeBoard(WIDTH,HEIGHT)
 
 /** creates array for board data structure
@@ -79,7 +79,10 @@ function findSpotForCol(x) {
 /** placeInTable: update DOM to place piece into HTML table of board */
 
 function placeInTable(y, x) {
-  // TODO: make a div and insert into correct table cell
+  const piece = document.createElement('div');
+  const tableCell = document.getElementById(`${y}-${x}`);
+  piece.classList.add('piece', currPlayer)
+  tableCell.append(piece);
 }
 
 /** endGame: announce game end */
