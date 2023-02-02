@@ -8,8 +8,10 @@
 const WIDTH = 7;
 const HEIGHT = 6;
 
-let currPlayer = 'player1'; // active player: 1 or 2
+let currPlayer = 1; // active player: 1 or 2
 const board = makeBoard(WIDTH,HEIGHT)
+
+let allowClick = true
 
 /** creates array for board data structure
  * accepts width and height value
@@ -81,37 +83,48 @@ function findSpotForCol(x) {
 function placeInTable(y, x) {
   const piece = document.createElement('div');
   const tableCell = document.getElementById(`${y}-${x}`);
-  piece.classList.add('piece', currPlayer)
+  piece.classList.add('piece', `p${currPlayer}`);
   tableCell.append(piece);
 }
 
 /** endGame: announce game end */
 
-function endGame(msg) {
-  // TODO: pop up alert message
-}
+const endGame = msg => alert(msg)
 
 /** handleClick: handle click of column top to play piece */
 
 function handleClick(evt) {
+  if (!allowClick){
+    return
+  }
   // get x from ID of clicked cell
-  var x = +evt.target.id;
+  const x = evt.target.id;
 
   // get next spot in column (if none, ignore click)
-  var y = findSpotForCol(x);
+  const y = findSpotForCol(x);
   if (y === null) {
     return;
   }
 
   // place piece in board and add to HTML table
-  // TODO: add line to update in-memory board
+  // update memory board
   placeInTable(y, x);
+  board[y].splice(x, 1, currPlayer)
+
+  allowClick = false;
 
   // check for win
-  if (checkForWin()) {
-    return endGame(`Player ${currPlayer} won!`);
-  }
-
+  setTimeout(function() { if (checkForWin()) {
+      return endGame(`Player ${currPlayer} won!`);
+    }
+    if(currPlayer === 1){
+      currPlayer = 2
+    } 
+    else if( currPlayer === 2) {
+      currPlayer = 1
+    }
+    allowClick = true
+  }, 250)
   // check for tie
   // TODO: check if all cells in board are filled; if so call, call endGame
 
@@ -122,7 +135,7 @@ function handleClick(evt) {
 /** checkForWin: check board cell-by-cell for "does a win start here?" */
 
 function checkForWin() {
-  function _win(cells) {
+  function win(cells) {
     // Check four cells to see if they're all color of current player
     //  - cells: list of four (y, x) cells
     //  - returns true if all are legal coordinates & all match currPlayer
@@ -136,17 +149,20 @@ function checkForWin() {
         board[y][x] === currPlayer
     );
   }
+  
+/** creating arrays for every possible winning combination 
+ * those arrays are passed into win()
+ * if any of those arrays causes win() to return true, the function returns true
+ * otherwise nothing.
+ */
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = 0; x < WIDTH; x++) {
+      const horiz = [[y, x], [y, x + 1], [y, x + 2], [y, x + 3]];
+      const vert = [[y, x], [y + 1, x], [y + 2, x], [y + 3, x]];
+      const diagDR = [[y, x], [y + 1, x + 1], [y + 2, x + 2], [y + 3, x + 3]];
+      const diagDL = [[y, x], [y + 1, x - 1], [y + 2, x - 2], [y + 3, x - 3]];
 
-  // TODO: read and understand this code. Add comments to help you.
-
-  for (var y = 0; y < HEIGHT; y++) {
-    for (var x = 0; x < WIDTH; x++) {
-      var horiz = [[y, x], [y, x + 1], [y, x + 2], [y, x + 3]];
-      var vert = [[y, x], [y + 1, x], [y + 2, x], [y + 3, x]];
-      var diagDR = [[y, x], [y + 1, x + 1], [y + 2, x + 2], [y + 3, x + 3]];
-      var diagDL = [[y, x], [y + 1, x - 1], [y + 2, x - 2], [y + 3, x - 3]];
-
-      if (_win(horiz) || _win(vert) || _win(diagDR) || _win(diagDL)) {
+      if (win(horiz) || win(vert) || win(diagDR) || win(diagDL)) {
         return true;
       }
     }
